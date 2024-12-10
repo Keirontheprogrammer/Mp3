@@ -22,6 +22,7 @@ public class frame extends JFrame implements ActionListener, ChangeListener {
     JPanel panel1;
     JSlider slider;
     FloatControl volumeControl;
+    JProgressBar bar=new JProgressBar();
     frame() throws UnsupportedAudioFileException, IOException, LineUnavailableException {
 
         File file=new File("12. CIRCUS MAXIMUS - (Hiphopde.com).wav");
@@ -31,7 +32,7 @@ public class frame extends JFrame implements ActionListener, ChangeListener {
 
         volumeControl=(FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
 
-        slider=new JSlider(0,100,100);
+        slider=new JSlider(0,100,60);
         slider.setFont(new Font("MV Boli",Font.PLAIN,16));
         slider.setPreferredSize(new Dimension(400,50));
         slider.setBackground(Color.orange);
@@ -44,12 +45,20 @@ public class frame extends JFrame implements ActionListener, ChangeListener {
         slider.setMajorTickSpacing(25);
         slider.setPaintLabels(true);
 
+        bar.setStringPainted(true);
+        bar.setPreferredSize(new Dimension(400,30));
+        bar.setMinimum(0);
+        bar.setMaximum((int) clip.getMicrosecondLength());
+        bar.setForeground(Color.RED);
+        bar.setBackground(Color.BLACK);
+        bar.setFont(new Font("MV Boli",Font.BOLD,16));
 
         panel=new JPanel();
         panel.setBackground(Color.orange);
         panel1=new JPanel();
         panel.add(slider);
-        panel1.setBackground(Color.green);
+        panel1.add(bar);
+        panel1.setBackground(Color.black);
 
         ImageIcon icon=new ImageIcon("360_F_705409131_qkbY7Kl3XyxOFhxm4TsDC7jHoJnVr6eD.jpg");
 
@@ -59,7 +68,6 @@ public class frame extends JFrame implements ActionListener, ChangeListener {
         label.setHorizontalAlignment(JLabel.CENTER);
         label.setVerticalAlignment(JLabel.CENTER);
 //        label.setBounds(0,0,23,45);
-        label.setText("playing some bangers");
         label.setForeground(Color.red);
         label.setFont(new Font("Comic Sans",Font.BOLD,18));
         label.setVerticalTextPosition(JLabel.BOTTOM);
@@ -99,6 +107,8 @@ public class frame extends JFrame implements ActionListener, ChangeListener {
         panel.setPreferredSize(new Dimension(100,100));
         panel1.setPreferredSize(new Dimension(100,100));
 
+        volumePercent(slider.getValue());
+
 
 
         new JFrame();
@@ -110,6 +120,7 @@ public class frame extends JFrame implements ActionListener, ChangeListener {
         this.add(panel1,BorderLayout.CENTER);
 
 
+
     }
 
     @Override
@@ -117,6 +128,7 @@ public class frame extends JFrame implements ActionListener, ChangeListener {
         if(e.getSource()==button1){
             clip.start();
             label.setVisible(true);
+            updateProgressBar();
         }
         else if(e.getSource()==button2){
             clip.stop();
@@ -142,5 +154,19 @@ public class frame extends JFrame implements ActionListener, ChangeListener {
         float maxDb=6.0f;
         float volume=minDb + (maxDb-minDb)* (percent/100.0f);
         volumeControl.setValue(volume);
+    }
+    public void updateProgressBar(){
+        new Thread(()->{
+            while(clip.isRunning()){
+
+                bar.setValue((int) clip.getMicrosecondPosition());
+
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }).start();
     }
 }
