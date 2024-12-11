@@ -15,6 +15,7 @@ public class frame extends JFrame implements ActionListener, ChangeListener {
     JButton button1;
     JButton button2;
     JButton button3;
+    JButton button4;
     JLabel label;
     JLabel label1;
     Clip clip;
@@ -99,10 +100,16 @@ public class frame extends JFrame implements ActionListener, ChangeListener {
         button3.setText("restart");
         button3.setLayout(new FlowLayout());
 
+        button4=new JButton("select song");
+        button4.addActionListener(this);
+        button4.setFocusable(false);
+        button4.setLayout(new FlowLayout());
+
         panel.add(label1);
         panel.add(button1);
         panel.add(button2);
         panel.add(button3);
+        panel.add(button4);
         panel1.add(label);
         panel.setPreferredSize(new Dimension(100,100));
         panel1.setPreferredSize(new Dimension(100,100));
@@ -133,8 +140,37 @@ public class frame extends JFrame implements ActionListener, ChangeListener {
         else if(e.getSource()==button2){
             clip.stop();
         }
-        else{
+        else if(e.getSource()==button3){
             clip.setMicrosecondPosition(0);
+        }
+        else if (e.getSource()==button4){
+            JFileChooser chooser=new JFileChooser();
+          int response=  chooser.showOpenDialog(null);
+          if(response==JFileChooser.APPROVE_OPTION){
+              File file=new File(chooser.getSelectedFile().getAbsolutePath());
+              AudioInputStream audioStream= null;
+              try {
+                  audioStream = AudioSystem.getAudioInputStream(file);
+              } catch (UnsupportedAudioFileException ex) {
+                  throw new RuntimeException(ex);
+              } catch (IOException ex) {
+                  throw new RuntimeException(ex);
+              }
+              try {
+                  clip=AudioSystem.getClip();
+              } catch (LineUnavailableException ex) {
+                  throw new RuntimeException(ex);
+              }
+              try {
+                  clip.open(audioStream);
+              } catch (LineUnavailableException ex) {
+                  throw new RuntimeException(ex);
+              } catch (IOException ex) {
+                  throw new RuntimeException(ex);
+              }
+              volumeControl=(FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+              volumePercent(slider.getValue());
+          }
         }
 
     }
